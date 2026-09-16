@@ -86,6 +86,40 @@ app.get('/api/students/count/total', async (req, res) => {
   }
 });
 
+// ROUTE: Update a student's details by ID (UPDATE in database)
+app.put('/api/students/:id', async (req, res) => {
+  try {
+    const updatedStudent = await Student.findByIdAndUpdate(
+      req.params.id,
+      req.body,
+      { new: true, runValidators: true }
+    );
+    if (!updatedStudent) {
+      return res.status(404).json({ error: 'Student not found' });
+    }
+    res.status(200).json(updatedStudent);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// ROUTE: Mark an alert as resolved by ID (UPDATE in database)
+app.put('/api/alerts/:id/resolve', async (req, res) => {
+  try {
+    const updatedAlert = await Alert.findByIdAndUpdate(
+      req.params.id,
+      { resolved: true },
+      { new: true }
+    );
+    if (!updatedAlert) {
+      return res.status(404).json({ error: 'Alert not found' });
+    }
+    res.status(200).json(updatedAlert);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
 // Start the server
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {
