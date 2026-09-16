@@ -5,8 +5,9 @@ import express from 'express';
 import mongoose from 'mongoose';
 import cors from 'cors';
 
-// Import your Student model
+// Import your Student and Alert models
 import Student from './models/Student.js';
+import Alert from './models/Alert.js';
 
 const app = express();
 
@@ -25,6 +26,17 @@ app.post('/api/students', async (req, res) => {
     const newStudent = new Student(req.body);
     const savedStudent = await newStudent.save();
     res.status(201).json(savedStudent);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// ROUTE: Create a new alert (WRITE to database)
+app.post('/api/alerts', async (req, res) => {
+  try {
+    const newAlert = new Alert(req.body);
+    const savedAlert = await newAlert.save();
+    res.status(201).json(savedAlert);
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
