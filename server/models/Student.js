@@ -1,12 +1,13 @@
-const mongoose = require('mongoose');
+import mongoose from 'mongoose';
 
 const studentSchema = new mongoose.Schema({
-  name: { type: String, required: true },
-  rollNumber: { type: String, required: true, unique: true },
-  grade: { type: String, required: true },
-  attendancePercentage: { type: Number, default: 100 },
-  averageGrade: { type: Number, default: 0 },
-  riskLevel: { type: String, enum: ['Low', 'Medium', 'High'], default: 'Low' },
-}, { timestamps: true });
+  name: String,
+  rollNumber: String,
+  attendance: Number,
+  // add more fields here if your app needs them, e.g.:
+  // internalMarks: Number,
+  // assignmentsSubmitted: Number,
+  // participationScore: Number,
+});
 
-module.exports = mongoose.model('Student', studentSchema);
+export default mongoose.model('Student', studentSchema);
