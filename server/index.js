@@ -53,6 +53,27 @@ app.get('/api/students/:id', async (req, res) => {
   }
 });
 
+// ROUTE 4: Get students below a given attendance threshold (at-risk students)
+app.get('/api/students/at-risk/:threshold', async (req, res) => {
+  try {
+    const threshold = Number(req.params.threshold);
+    const atRiskStudents = await Student.find({ attendance: { $lt: threshold } });
+    res.status(200).json(atRiskStudents);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// ROUTE 5: Get total count of students in the database
+app.get('/api/students/count/total', async (req, res) => {
+  try {
+    const count = await Student.countDocuments();
+    res.status(200).json({ totalStudents: count });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
 // Start the server
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {
