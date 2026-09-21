@@ -86,6 +86,32 @@ app.get('/api/students/count/total', async (req, res) => {
   }
 });
 
+// ROUTE: Get all alerts WITH full student details populated
+// This demonstrates the relationship between Alert and Student entities -
+// instead of just returning the student's ObjectId, Mongoose's populate()
+// replaces it with the actual student document (name, rollNumber, attendance, etc.)
+app.get('/api/alerts', async (req, res) => {
+  try {
+    const alerts = await Alert.find().populate('student');
+    res.status(200).json(alerts);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// ROUTE: Get a single alert by ID WITH full student details populated
+app.get('/api/alerts/:id', async (req, res) => {
+  try {
+    const alert = await Alert.findById(req.params.id).populate('student');
+    if (!alert) {
+      return res.status(404).json({ error: 'Alert not found' });
+    }
+    res.status(200).json(alert);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
 // ROUTE: Update a student's details by ID (UPDATE in database)
 app.put('/api/students/:id', async (req, res) => {
   try {
