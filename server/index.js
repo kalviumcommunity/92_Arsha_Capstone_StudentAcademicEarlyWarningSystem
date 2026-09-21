@@ -11,6 +11,7 @@ import Alert from './models/Alert.js';
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 import User from './models/User.js';
+import authMiddleware from './middleware/authMiddleware.js';
 
 const app = express();
 
@@ -23,8 +24,8 @@ mongoose.connect(process.env.MONGO_URI)
   .then(() => console.log('✅ MongoDB connected successfully'))
   .catch((err) => console.error('❌ MongoDB connection error:', err.message));
 
-// ROUTE 1: Create a new student (WRITE to database)
-app.post('/api/students', async (req, res) => {
+// ROUTE 1: Create a new student (WRITE to database) - PROTECTED
+app.post('/api/students', authMiddleware, async (req, res) => {
   try {
     const newStudent = new Student(req.body);
     const savedStudent = await newStudent.save();
@@ -34,8 +35,8 @@ app.post('/api/students', async (req, res) => {
   }
 });
 
-// ROUTE: Create a new alert (WRITE to database)
-app.post('/api/alerts', async (req, res) => {
+// ROUTE: Create a new alert (WRITE to database) - PROTECTED
+app.post('/api/alerts', authMiddleware, async (req, res) => {
   try {
     const newAlert = new Alert(req.body);
     const savedAlert = await newAlert.save();
@@ -100,7 +101,7 @@ app.post('/api/auth/login', async (req, res) => {
   }
 });
 
-// ROUTE 2: Get all students (READ from database)
+// ROUTE 2: Get all students (READ from database) - public
 app.get('/api/students', async (req, res) => {
   try {
     const students = await Student.find();
@@ -110,7 +111,7 @@ app.get('/api/students', async (req, res) => {
   }
 });
 
-// ROUTE 3: Get a single student by ID (READ from database)
+// ROUTE 3: Get a single student by ID (READ from database) - public
 app.get('/api/students/:id', async (req, res) => {
   try {
     const student = await Student.findById(req.params.id);
@@ -123,7 +124,7 @@ app.get('/api/students/:id', async (req, res) => {
   }
 });
 
-// ROUTE 4: Get students below a given attendance threshold (at-risk students)
+// ROUTE 4: Get students below a given attendance threshold (at-risk students) - public
 app.get('/api/students/at-risk/:threshold', async (req, res) => {
   try {
     const threshold = Number(req.params.threshold);
@@ -134,7 +135,7 @@ app.get('/api/students/at-risk/:threshold', async (req, res) => {
   }
 });
 
-// ROUTE 5: Get total count of students in the database
+// ROUTE 5: Get total count of students in the database - public
 app.get('/api/students/count/total', async (req, res) => {
   try {
     const count = await Student.countDocuments();
@@ -144,10 +145,7 @@ app.get('/api/students/count/total', async (req, res) => {
   }
 });
 
-// ROUTE: Get all alerts WITH full student details populated
-// This demonstrates the relationship between Alert and Student entities -
-// instead of just returning the student's ObjectId, Mongoose's populate()
-// replaces it with the actual student document (name, rollNumber, attendance, etc.)
+// ROUTE: Get all alerts WITH full student details populated - public
 app.get('/api/alerts', async (req, res) => {
   try {
     const alerts = await Alert.find().populate('student');
@@ -157,7 +155,7 @@ app.get('/api/alerts', async (req, res) => {
   }
 });
 
-// ROUTE: Get a single alert by ID WITH full student details populated
+// ROUTE: Get a single alert by ID WITH full student details populated - public
 app.get('/api/alerts/:id', async (req, res) => {
   try {
     const alert = await Alert.findById(req.params.id).populate('student');
@@ -170,8 +168,8 @@ app.get('/api/alerts/:id', async (req, res) => {
   }
 });
 
-// ROUTE: Update a student's details by ID (UPDATE in database)
-app.put('/api/students/:id', async (req, res) => {
+// ROUTE: Update a student's details by ID (UPDATE in database) - PROTECTED
+app.put('/api/students/:id', authMiddleware, async (req, res) => {
   try {
     const updatedStudent = await Student.findByIdAndUpdate(
       req.params.id,
@@ -187,8 +185,8 @@ app.put('/api/students/:id', async (req, res) => {
   }
 });
 
-// ROUTE: Mark an alert as resolved by ID (UPDATE in database)
-app.put('/api/alerts/:id/resolve', async (req, res) => {
+// ROUTE: Mark an alert as resolved by ID (UPDATE in database) - PROTECTED
+app.put('/api/alerts/:id/resolve', authMiddleware, async (req, res) => {
   try {
     const updatedAlert = await Alert.findByIdAndUpdate(
       req.params.id,
