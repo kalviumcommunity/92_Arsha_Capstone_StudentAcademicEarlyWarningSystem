@@ -12,12 +12,15 @@ import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 import User from './models/User.js';
 import authMiddleware from './middleware/authMiddleware.js';
+import { OAuth2Client } from 'google-auth-library';
 
 const app = express();
+const googleClient = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
 
 // Middleware
 app.use(cors());
 app.use(express.json()); // lets us read JSON from request bodies
+app.use(express.static('.')); // lets us serve test-google-login.html directly
 
 // Connect to MongoDB
 mongoose.connect(process.env.MONGO_URI)
@@ -98,6 +101,46 @@ app.post('/api/auth/login', async (req, res) => {
     res.status(200).json({ message: 'Login successful', token });
   } catch (err) {
     res.status(500).json({ error: err.message });
+  }
+});
+
+// ROUTE: Verify a Google ID token and log the user in (or create their account)
+app.post('/api/auth/google', async (req, res) => {
+  try {
+    const { idToken } = req.body;
+
+    if (!idToken) {
+      return res.status(400).json({ error: 'Google ID token is required' });
+    }
+
+    // Verify the token with Google
+    const ticket = await googleClient.verifyIdToken({
+      idToken,
+      audience: process.env.GOOGLE_CLIENT_ID,
+    });
+    const payload = ticket.getPayload();
+
+    // Find existing Google user, or create a new one
+    let user = await User.findOne({ googleId: payload.sub });
+    if (!user) {
+      user = new User({
+        googleId: payload.sub,
+        email: payload.email,
+        provider: 'google',
+      });
+      await user.save();
+    }
+
+    // Issue our own JWT, same as regular login
+    const token = jwt.sign(
+      { userId: user._id, email: user.email },
+      process.env.JWT_SECRET,
+      { expiresIn: '1h' }
+    );
+
+    res.status(200).json({ message: 'Google login successful', token, user: { email: user.email, provider: user.provider } });
+  } catch (err) {
+    res.status(401).json({ error: 'Invalid Google token', details: err.message });
   }
 });
 
