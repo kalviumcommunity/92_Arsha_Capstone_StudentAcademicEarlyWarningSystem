@@ -13,6 +13,8 @@ import jwt from 'jsonwebtoken';
 import User from './models/User.js';
 import authMiddleware from './middleware/authMiddleware.js';
 import { OAuth2Client } from 'google-auth-library';
+import multer from 'multer';
+import path from 'path';
 
 const app = express();
 const googleClient = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
@@ -21,6 +23,34 @@ const googleClient = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
 app.use(cors());
 app.use(express.json()); // lets us read JSON from request bodies
 app.use(express.static('.')); // lets us serve test-google-login.html directly
+// ---------- File upload setup (multer) ----------
+const storage = multer.diskStorage({
+  destination: (req, file, cb) => cb(null, 'uploads/'),
+  filename: (req, file, cb) => {
+    // unique name so two files never overwrite each other
+    const uniqueName = Date.now() + '-' + Math.round(Math.random() * 1e9) + path.extname(file.originalname);
+    cb(null, uniqueName);
+  },
+});
+
+// Only allow images and PDFs
+const fileFilter = (req, file, cb) => {
+  const allowedTypes = ['image/jpeg', 'image/png', 'application/pdf'];
+  if (allowedTypes.includes(file.mimetype)) {
+    cb(null, true);
+  } else {
+    cb(new Error('Only JPG, PNG, and PDF files are allowed'));
+  }
+};
+
+const upload = multer({
+  storage,
+  fileFilter,
+  limits: { fileSize: 2 * 1024 * 1024 }, // 2 MB max
+});
+
+// Makes uploaded files viewable in the browser at /uploads/<filename>
+app.use('/uploads', express.static('uploads'));
 
 // Connect to MongoDB
 mongoose.connect(process.env.MONGO_URI)
@@ -245,6 +275,22 @@ app.put('/api/alerts/:id/resolve', authMiddleware, async (req, res) => {
   }
 });
 
+// ROUTE: Upload a file (images or PDFs, max 2MB) - PROTECTED
+app.post('/api/upload', authMiddleware, (req, res) => {
+  upload.single('file')(req, res, (err) => {
+    if (err) {
+      return res.status(400).json({ error: err.message });
+    }
+    if (!req.file) {
+      return res.status(400).json({ error: 'No file uploaded' });
+    }
+    res.status(201).json({
+      message: 'File uploaded successfully',
+      filename: req.file.filename,
+      url: `/uploads/${req.file.filename}`,
+    });
+  });
+});
 // Start the server
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {
