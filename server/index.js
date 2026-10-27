@@ -15,6 +15,7 @@ import authMiddleware from './middleware/authMiddleware.js';
 import { OAuth2Client } from 'google-auth-library';
 import multer from 'multer';
 import path from 'path';
+import fs from 'fs';
 
 const app = express();
 const googleClient = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
@@ -24,6 +25,8 @@ app.use(cors());
 app.use(express.json()); // lets us read JSON from request bodies
 app.use(express.static('.')); // lets us serve test-google-login.html directly
 // ---------- File upload setup (multer) ----------
+// Create the uploads folder if it doesn't exist (e.g. on a fresh clone)
+fs.mkdirSync('uploads', { recursive: true });
 const storage = multer.diskStorage({
   destination: (req, file, cb) => cb(null, 'uploads/'),
   filename: (req, file, cb) => {
