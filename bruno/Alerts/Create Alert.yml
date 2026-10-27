@@ -1,0 +1,31 @@
+info:
+  name: Create Alert
+  type: http
+  seq: 1
+
+http:
+  method: POST
+  url: "{{baseUrl}}/api/alerts"
+  body:
+    type: json
+    data: |-
+      {
+        "student": "{{studentId}}",
+        "reason": "Attendance below 75%",
+        "severity": "High"
+      }
+  auth:
+    type: bearer
+    token: "{{token}}"
+
+runtime:
+  scripts:
+    - type: after-response
+      code: bru.setEnvVar("alertId", res.body._id);
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
+  forwardAuthorizationHeader: false

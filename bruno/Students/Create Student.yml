@@ -1,0 +1,31 @@
+info:
+  name: Create Student
+  type: http
+  seq: 1
+
+http:
+  method: POST
+  url: "{{baseUrl}}/api/students"
+  body:
+    type: json
+    data: |-
+      {
+        "name": "Test Student",
+        "rollNumber": "CS101",
+        "attendance": 65
+      }
+  auth:
+    type: bearer
+    token: "{{token}}"
+
+runtime:
+  scripts:
+    - type: after-response
+      code: bru.setEnvVar("studentId", res.body._id);
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
+  forwardAuthorizationHeader: false

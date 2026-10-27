@@ -1,0 +1,22 @@
+info:
+  name: "Google login "
+  type: http
+  seq: 12
+
+http:
+  method: POST
+  url: "{{baseUrl}}/api/auth/google"
+  body:
+    type: json
+    data: |-
+      {
+        "idToken": "<google-id-token-from-google-sign-in>"
+      }
+  auth: inherit
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
+  forwardAuthorizationHeader: false
