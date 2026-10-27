@@ -1,0 +1,24 @@
+info:
+  name: Update Student
+  type: http
+  seq: 1
+
+http:
+  method: PUT
+  url: "{{baseUrl}}/api/students/{{studentId}}"
+  body:
+    type: json
+    data: |-
+      {
+        "attendance": 72
+      }
+  auth:
+    type: bearer
+    token: "{{token}}"
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
+  forwardAuthorizationHeader: false

@@ -1,0 +1,9 @@
+name: local
+variables:
+  - name: baseUrl
+    value: http://localhost:5000
+  - name: token
+  - name: studentId
+    value: 6ae0e45deccae43d8193a942
+  - name: alertId
+    value: 6ae0e4aaeccae43d8193a943
