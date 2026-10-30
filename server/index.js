@@ -23,7 +23,6 @@ const googleClient = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
 // Middleware
 app.use(cors());
 app.use(express.json()); // lets us read JSON from request bodies
-app.use(express.static('.')); // lets us serve test-google-login.html directly
 // ---------- File upload setup (multer) ----------
 // Create the uploads folder if it doesn't exist (e.g. on a fresh clone)
 fs.mkdirSync('uploads', { recursive: true });
@@ -54,6 +53,8 @@ const upload = multer({
 
 // Makes uploaded files viewable in the browser at /uploads/<filename>
 app.use('/uploads', express.static('uploads'));
+
+app.get('/', (req, res) => res.send('AcadVision API is running'));
 
 // Connect to MongoDB
 mongoose.connect(process.env.MONGO_URI)
@@ -140,7 +141,7 @@ app.post('/api/auth/login', async (req, res) => {
 // ROUTE: Verify a Google ID token and log the user in (or create their account)
 app.post('/api/auth/google', async (req, res) => {
   try {
-    const { idToken } = req.body;
+    const idToken = req.body.credential;
 
     if (!idToken) {
       return res.status(400).json({ error: 'Google ID token is required' });
