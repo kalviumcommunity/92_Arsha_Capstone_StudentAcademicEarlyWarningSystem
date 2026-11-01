@@ -128,3 +128,12 @@ B.Tech Computer Science Engineering (Artificial Intelligence & Machine Learning)
 
 ## Project Status
 🟢 Currently in Planning Phase
+
+## Deployment
+Backend is deployed on Render.
+Live URL: https://acadvision-backend.onrender.com
+
+- Root Directory: server
+- Build Command: npm install
+- Start Command: npm start
+- Database: MongoDB Atlas (network access allowed for Render)
